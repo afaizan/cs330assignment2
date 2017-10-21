@@ -54,6 +54,7 @@
 #include "system.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 // External functions used by this file
@@ -62,7 +63,7 @@ extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
 extern void Print(char *file), PerformanceTest(void);
 extern void LaunchUserProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
-
+extern void ForkStartFunction(int dummy);
 //----------------------------------------------------------------------
 // main
 // 	Bootstrap the operating system kernel.  
@@ -76,7 +77,7 @@ extern void MailTest(int networkID);
 //	"argv" is an array of strings, one for each command line argument
 //		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
-
+ 
 int
 main(int argc, char **argv)
 {
@@ -115,9 +116,16 @@ main(int argc, char **argv)
 		else if(!strcmp(*argv, "-F"))
 		{
 			ASSERT(argc > 1);
+			string line;
 			ifstream file;
 			file.open(*(argv + 1));
-			string line;
+			int schedulingAlgorithm;	//which scheduling algorithm to use
+			getline(file, line);
+			//schedulingAlgorithm = stoi(line);
+			stringstream str(line);
+			str >> schedulingAlgorithm;
+			// cout << schedulingAlgorithm << endl;
+			
 			while(getline(file,line))
 			{
 				char *exec, *temp_prior;
@@ -149,9 +157,44 @@ main(int argc, char **argv)
 					priority_value = atoi(temp_prior);
 				else
 					priority_value = 100;
-				// cout<<exec<<" "<<priority_value<<endl;
-				// NachOSThread 
+				//cout<<exec<<" "<<priority_value<<endl;
+
+
+				OpenFile *executable = fileSystem->Open(exec);
+				ProcessAddressSpace *space;
+				//printf("%d\n",j);
+
+				//check for valid file
+				if(executable == NULL){
+					printf("Unable to open file %s\n",exec);
+					continue;
+				}
+
+				space = new ProcessAddressSpace(executable);
+				delete executable;		//close file
+
+				space->InitUserModeCPURegisters();
+
+				NachOSThread *new_thread = new NachOSThread(exec);
+				priorityValue[new_thread->GetPID()] = priority_value;
+				new_thread->space = space;
+				new_thread->SaveUserState();
+				new_thread->CreateThreadStack(ForkStartFunction, 0);
+				new_thread->Schedule();
+
+				printf("Thread created and scheduled: %s\n",exec);
 			}
+			printf("[pid %d]:Exit called at totalTick = %d. Code: 0\n",currentThread->GetPID(), stats->totalTicks);
+
+			exitThreadArray[currentThread->GetPID()] = true;
+
+			unsigned int i;
+			for (i=0;i<thread_index;i++){
+				if(!exitThreadArray[i])
+					break;
+			}
+
+			currentThread->Exit(i==thread_index,0);
 		}
 	#endif // USER_PROGRAM
 	#ifdef FILESYS

@@ -24,6 +24,12 @@ extern void Initialize(int argc, char **argv); 	// Initialization,
 extern void Cleanup();				// Cleanup, called when
 						// Nachos is done.
 
+extern int priorityValue[];
+extern int schedulingAlgorithm;
+extern int cpu_count;
+extern int total_wait;
+
+
 extern NachOSThread *currentThread;			// the thread holding the CPU
 extern NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 extern ProcessScheduler *scheduler;			// the ready list

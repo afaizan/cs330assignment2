@@ -24,6 +24,8 @@ NachOSThread *threadArray[MAX_THREAD_COUNT];  // Array of thread pointers
 unsigned thread_index;                  // Index into this array (also used to assign unique pid)
 bool initializedConsoleSemaphores;
 bool exitThreadArray[MAX_THREAD_COUNT];  //Marks exited threads
+int priorityValue[MAX_THREAD_COUNT];  //Array to store priority values
+
 
 TimeSortedWaitQueue *sleepQueueHead;    // Needed to implement SC_Sleep
 

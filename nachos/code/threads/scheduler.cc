@@ -56,7 +56,11 @@ ProcessScheduler::MoveThreadToReadyQueue (NachOSThread *thread)
     DEBUG('t', "Putting thread %s with PID %d on ready list.\n", thread->getName(), thread->GetPID());
 
     thread->setStatus(READY);
-    listOfReadyThreads->Append((void *)thread);
+    // if(schedulingAlgorithm == 1)
+        listOfReadyThreads->Append((void *)thread);
+    // else if(schedulingAlgorithm == 2)
+    //     listOfReadyThreads->SortedInsert((void*)thread, priorityValue[thread->GetPID()]);
+
 }
 
 //----------------------------------------------------------------------
@@ -70,7 +74,9 @@ ProcessScheduler::MoveThreadToReadyQueue (NachOSThread *thread)
 NachOSThread *
 ProcessScheduler::SelectNextReadyThread ()
 {
-    return (NachOSThread *)listOfReadyThreads->Remove();
+    // if(schedulingAlgorithm <= 6)
+       return (NachOSThread *)listOfReadyThreads->Remove();
+   // write else part for UNIX scheduler
 }
 
 //----------------------------------------------------------------------
